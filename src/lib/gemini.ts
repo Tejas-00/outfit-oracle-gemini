@@ -1,9 +1,8 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// This would be replaced with an environment variable in a real application
-// For demo purposes, we'll create a placeholder for the API key
-const API_KEY = "YOUR_GEMINI_API_KEY";
+// IMPORTANT: This is your Gemini API key, which you've provided and is OK for frontend public usage.
+const API_KEY = "AIzaSyBbi_NV6uc5pWixErFT3Pg1035SPbsNR44";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -35,20 +34,20 @@ export const getStyleRecommendation = async (
 ): Promise<StyleRecommendation> => {
   try {
     console.log("Generating style recommendation for:", formData);
-    
+
     // This is a placeholder function that would normally call the Gemini API
     // For demo purposes, we'll return a mock response
-    
+
     // In a real implementation, you would:
     // 1. Create a prompt using the form data
     // 2. Send the prompt to the Gemini API
     // 3. Parse the response and return a StyleRecommendation
-    
+
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    
+
     const prompt = `
       As a fashion expert, create a detailed outfit recommendation for a person with the following characteristics:
-      
+
       - Skin tone: ${formData.skinTone}
       - Hair color: ${formData.hairColor}
       - Body type: ${formData.bodyType}
@@ -56,13 +55,13 @@ export const getStyleRecommendation = async (
       - Gender: ${formData.gender}
       - Occasion: ${formData.occasion}
       ${formData.additionalInfo ? `- Additional information: ${formData.additionalInfo}` : ''}
-      
+
       Please provide:
       1. A specific outfit recommendation with details for top, bottom, shoes, and accessories
       2. A color palette that would complement their features
       3. A brief explanation of why this outfit would work well for them
       4. A detailed text prompt that could be used to generate an image of this outfit (without mentioning that it's a prompt)
-      
+
       Format the response in JSON with the following structure:
       {
         "outfit": {
@@ -76,22 +75,22 @@ export const getStyleRecommendation = async (
         "imagePrompt": "detailed description for image generation"
       }
     `;
-    
+
     // For demo purposes, we'll return a mock response instead of calling the API
     // In a real implementation, you would uncomment this code and use the actual API response
     /*
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Parse the JSON response
     const recommendation = JSON.parse(text);
     return recommendation;
     */
-    
+
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Return mock data based on the form input
     return getMockStyleRecommendation(formData);
   } catch (error) {
@@ -142,3 +141,4 @@ function getMockStyleRecommendation(formData: StyleFormData): StyleRecommendatio
   // Default to casual if the occasion isn't in our map
   return occasionMap[formData.occasion] || occasionMap.casual;
 }
+
