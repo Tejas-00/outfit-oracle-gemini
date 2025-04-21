@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // IMPORTANT: This is your Gemini API key, which you've provided and is OK for frontend public usage.
@@ -27,6 +26,7 @@ export interface StyleRecommendation {
   };
   description: string;
   imagePrompt: string;
+  imageUrl?: string; // Added to store generated image URL
 }
 
 export const getStyleRecommendation = async (
@@ -34,14 +34,6 @@ export const getStyleRecommendation = async (
 ): Promise<StyleRecommendation> => {
   try {
     console.log("Generating style recommendation for:", formData);
-
-    // This is a placeholder function that would normally call the Gemini API
-    // For demo purposes, we'll return a mock response
-
-    // In a real implementation, you would:
-    // 1. Create a prompt using the form data
-    // 2. Send the prompt to the Gemini API
-    // 3. Parse the response and return a StyleRecommendation
 
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
@@ -76,23 +68,46 @@ export const getStyleRecommendation = async (
       }
     `;
 
-    // For demo purposes, we'll return a mock response instead of calling the API
-    // In a real implementation, you would uncomment this code and use the actual API response
-    /*
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    try {
+      // Call the Gemini API
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      console.log("Gemini API response:", text);
 
-    // Parse the JSON response
-    const recommendation = JSON.parse(text);
-    return recommendation;
-    */
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Return mock data based on the form input
-    return getMockStyleRecommendation(formData);
+      // Parse the JSON response
+      // Sometimes the API might return text before or after the JSON, so we need to extract it
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("Invalid response format from Gemini API");
+      }
+      
+      const jsonStr = jsonMatch[0];
+      const recommendation = JSON.parse(jsonStr);
+      
+      // Ensure the response has the correct structure
+      if (!recommendation.outfit || !recommendation.description || !recommendation.imagePrompt) {
+        throw new Error("Incomplete response from Gemini API");
+      }
+      
+      // Generate image URL using the image prompt (for demo, using a placeholder)
+      // In a real app, this would call a text-to-image API with the imagePrompt
+      const imageUrl = `https://source.unsplash.com/random/800x600/?fashion,${encodeURIComponent(recommendation.outfit.top)},${encodeURIComponent(recommendation.outfit.bottom)},${encodeURIComponent(formData.occasion)}`;
+      
+      return {
+        ...recommendation,
+        imageUrl
+      };
+    } catch (apiError) {
+      console.error("Error calling Gemini API:", apiError);
+      // If API call fails, fall back to mock data
+      console.log("Falling back to mock data...");
+      return {
+        ...getMockStyleRecommendation(formData),
+        imageUrl: `https://source.unsplash.com/random/800x600/?fashion,${encodeURIComponent(formData.occasion)}`
+      };
+    }
   } catch (error) {
     console.error("Error generating style recommendation:", error);
     throw new Error("Failed to generate style recommendation. Please try again.");
@@ -100,7 +115,7 @@ export const getStyleRecommendation = async (
 };
 
 // This function generates mock recommendations for demo purposes
-// In a real application, this would be replaced by the actual Gemini API call
+// It will only be used as a fallback if the API call fails
 function getMockStyleRecommendation(formData: StyleFormData): StyleRecommendation {
   const occasionMap: Record<string, StyleRecommendation> = {
     casual: {
@@ -141,4 +156,3 @@ function getMockStyleRecommendation(formData: StyleFormData): StyleRecommendatio
   // Default to casual if the occasion isn't in our map
   return occasionMap[formData.occasion] || occasionMap.casual;
 }
-

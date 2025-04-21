@@ -27,7 +27,7 @@ const ResultsPage = () => {
         
         const formData: StyleFormData = JSON.parse(formDataString);
         
-        // Get recommendation from Gemini API (or mock for demo)
+        // Get recommendation from Gemini API
         const result = await getStyleRecommendation(formData);
         setRecommendation(result);
       } catch (err) {
@@ -63,26 +63,48 @@ const ResultsPage = () => {
     }
   };
 
-  // Helper function to display a placeholder or the recommended outfit image
+  // Helper function to display the recommended outfit image
   const renderOutfitImage = () => {
     if (loading) {
       return (
         <div className="animate-pulse bg-gray-200 w-full h-80 rounded-lg"></div>
       );
     }
+
+    if (!recommendation) {
+      return (
+        <div className="bg-fashion-purple-light w-full h-80 rounded-lg flex items-center justify-center">
+          <p className="text-fashion-purple-dark font-semibold px-4 py-2 bg-white/80 rounded-md">
+            No outfit recommendation available
+          </p>
+        </div>
+      );
+    }
     
-    // In a real implementation, we would generate an image with the Gemini API
-    // For the demo, we'll use a placeholder image
+    // If we have an imageUrl from the API, use it
+    if (recommendation.imageUrl) {
+      return (
+        <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-fashion-purple-light">
+          <img 
+            src={recommendation.imageUrl}
+            alt="Recommended outfit" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    }
+    
+    // Fallback to placeholder
     return (
       <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-fashion-purple-light">
         <img 
-          src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+          src="https://source.unsplash.com/random/800x600/?fashion"
           alt="Recommended outfit" 
           className="w-full h-full object-cover opacity-75"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="text-center text-fashion-purple-dark font-semibold px-4 py-2 bg-white/80 rounded-md">
-            AI-generated outfit visualization would appear here with the Gemini API
+            Image based on your style preferences
           </p>
         </div>
       </div>
