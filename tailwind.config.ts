@@ -18,6 +18,12 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Poppins', 'sans-serif'],
+				serif: ['Playfair Display', 'serif'],
+				heading: ['Playfair Display', 'serif'],
+				body: ['Poppins', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -32,6 +38,27 @@ export default {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
+                fashion: {
+                    purple: {
+                        light: "#E5DEFF",
+                        DEFAULT: "#9b87f5",
+                        medium: "#7E69AB",
+                        dark: "#6E59A5",
+                        darker: "#1A1F2C",
+                    },
+                    neutral: {
+                        gray: "#8E9196",
+                        light: "#F1F0FB",
+                    },
+                    accent: {
+                        green: "#F2FCE2",
+                        yellow: "#FEF7CD",
+                        orange: "#FEC6A1",
+                        pink: "#FFDEE2",
+                        peach: "#FDE1D3",
+                        blue: "#D3E4FD",
+                    },
+                },
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
