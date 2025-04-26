@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ const ResultsPage = () => {
   const [recommendation, setRecommendation] = useState<StyleRecommendation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const generateRecommendation = async () => {
@@ -81,14 +81,15 @@ const ResultsPage = () => {
       );
     }
     
-    // If we have an imageUrl from the API, use it
-    if (recommendation.imageUrl) {
+    // If we have an imageUrl from the API and no error, use it
+    if (recommendation.imageUrl && !imageError) {
       return (
         <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-fashion-purple-light">
           <img 
             src={recommendation.imageUrl}
             alt="Recommended outfit" 
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
         </div>
       );
@@ -98,7 +99,7 @@ const ResultsPage = () => {
     return (
       <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-fashion-purple-light">
         <img 
-          src="https://source.unsplash.com/random/800x600/?fashion"
+          src="https://source.unsplash.com/featured/800x600/?fashion,clothing"
           alt="Recommended outfit" 
           className="w-full h-full object-cover opacity-75"
         />

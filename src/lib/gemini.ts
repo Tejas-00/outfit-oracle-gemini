@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // IMPORTANT: This is your Gemini API key, which you've provided and is OK for frontend public usage.
-const API_KEY = "AIzaSyBbi_NV6uc5pWixErFT3Pg1035SPbsNR44";
+const API_KEY = "AIzaSyCfz13EWBfTpWJeA1OhL1828LfKPlooLBI";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -35,7 +35,15 @@ export const getStyleRecommendation = async (
   try {
     console.log("Generating style recommendation for:", formData);
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-pro",
+      generationConfig: {
+        temperature: 0.9,
+        topK: 1,
+        topP: 1,
+        maxOutputTokens: 2048,
+      }
+    });
 
     const prompt = `
       As a fashion expert, create a detailed outfit recommendation for a person with the following characteristics:
@@ -77,7 +85,6 @@ export const getStyleRecommendation = async (
       console.log("Gemini API response:", text);
 
       // Parse the JSON response
-      // Sometimes the API might return text before or after the JSON, so we need to extract it
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("Invalid response format from Gemini API");
@@ -92,8 +99,7 @@ export const getStyleRecommendation = async (
       }
       
       // Generate image URL using the image prompt (for demo, using a placeholder)
-      // In a real app, this would call a text-to-image API with the imagePrompt
-      const imageUrl = `https://source.unsplash.com/random/800x600/?fashion,${encodeURIComponent(recommendation.outfit.top)},${encodeURIComponent(recommendation.outfit.bottom)},${encodeURIComponent(formData.occasion)}`;
+      const imageUrl = `https://source.unsplash.com/featured/800x600/?fashion,${encodeURIComponent(recommendation.outfit.top.split(' ')[0])},${encodeURIComponent(recommendation.outfit.bottom.split(' ')[0])},${encodeURIComponent(formData.occasion)}`;
       
       return {
         ...recommendation,
@@ -156,3 +162,43 @@ function getMockStyleRecommendation(formData: StyleFormData): StyleRecommendatio
   // Default to casual if the occasion isn't in our map
   return occasionMap[formData.occasion] || occasionMap.casual;
 }
+
+// Test function to verify API key
+export const testGeminiAPI = async () => {
+  try {
+    console.log("Testing Gemini API key...");
+    
+    // Try to use the model with specific configuration
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-pro",
+      generationConfig: {
+        temperature: 0.9,
+        topK: 1,
+        topP: 1,
+        maxOutputTokens: 2048,
+      }
+    });
+    
+    // Simple test prompt
+    const testPrompt = "Hello, this is a test. Please respond with 'API is working'";
+    
+    const result = await model.generateContent(testPrompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log("API Response:", text);
+    return { success: true, message: "API key is valid" };
+  } catch (error) {
+    console.error("API Test Error Details:", {
+      error,
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    return { 
+      success: false, 
+      message: "API key is invalid or there's an error",
+      error: error instanceof Error ? error.message : "Unknown error"
+    };
+  }
+};
