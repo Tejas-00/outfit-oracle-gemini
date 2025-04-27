@@ -13,6 +13,7 @@ export interface StyleFormData {
   height: string;
   gender: string;
   occasion: string;
+  location?: string;  // Made location optional
   additionalInfo?: string;
 }
 
@@ -29,14 +30,100 @@ export interface StyleRecommendation {
   imageUrl?: string; // Added to store generated image URL
 }
 
+// Add weather interface
+interface WeatherData {
+  temperature: number;
+  condition: string;
+  humidity: number;
+}
+
+// Add geolocation interface
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+// Function to get user's current location
+export async function getUserLocation(): Promise<Coordinates> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by your browser'));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+      },
+      (error) => {
+        reject(new Error(`Error getting location: ${error.message}`));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+// Function to get Nashik weather data
+function getWeatherData(location?: string): WeatherData {
+  // If location is not provided or not Nashik, use default Nashik weather
+  if (!location || location.toLowerCase() !== 'nashik') {
+    console.log("Using default Nashik weather data");
+  }
+  
+  // Static weather data for Nashik
+  const nashikWeather = {
+    temperature: 28, // Average temperature in Celsius
+    condition: "Sunny", // Typical weather condition
+    humidity: 65 // Average humidity percentage
+  };
+
+  return nashikWeather;
+}
+
+// Add function to copy description to clipboard
+export const copyDescriptionToClipboard = (recommendation: StyleRecommendation): Promise<void> => {
+  const textToCopy = `
+Outfit Recommendation:
+Top: ${recommendation.outfit.top}
+Bottom: ${recommendation.outfit.bottom}
+Shoes: ${recommendation.outfit.shoes}
+Accessories: ${recommendation.outfit.accessories.join(', ')}
+Color Palette: ${recommendation.outfit.colorPalette.join(', ')}
+
+Description: ${recommendation.description}
+  `.trim();
+
+  return navigator.clipboard.writeText(textToCopy);
+};
+
 export const getStyleRecommendation = async (
   formData: StyleFormData
 ): Promise<StyleRecommendation> => {
   try {
     console.log("Generating style recommendation for:", formData);
 
+    // Try to get user's location
+    let userLocation: Coordinates | null = null;
+    try {
+      userLocation = await getUserLocation();
+      console.log("User location:", userLocation);
+    } catch (error) {
+      console.log("Could not get user location:", error);
+    }
+
+    // Get weather data (will use Nashik data if location not available)
+    const weatherData = getWeatherData(userLocation ? 'user' : formData.location);
+    console.log("Current weather:", weatherData);
+
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-2.0-flash",
       generationConfig: {
         temperature: 0.9,
         topK: 1,
@@ -54,6 +141,7 @@ export const getStyleRecommendation = async (
       - Height: ${formData.height}
       - Gender: ${formData.gender}
       - Occasion: ${formData.occasion}
+      - Current Weather: ${weatherData.temperature}°C, ${weatherData.condition}, ${weatherData.humidity}% humidity
       ${formData.additionalInfo ? `- Additional information: ${formData.additionalInfo}` : ''}
 
       Please provide:
@@ -170,7 +258,7 @@ export const testGeminiAPI = async () => {
     
     // Try to use the model with specific configuration
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-pro",
+      model: "gemini-2.5-pro",
       generationConfig: {
         temperature: 0.9,
         topK: 1,
