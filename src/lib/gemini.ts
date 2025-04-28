@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // IMPORTANT: This is your Gemini API key, which you've provided and is OK for frontend public usage.
-const API_KEY = "AIzaSyCfz13EWBfTpWJeA1OhL1828LfKPlooLBI";
+const API_KEY = "Your API";
 
 // Initialize the Gemini API
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -290,3 +290,6 @@ export const testGeminiAPI = async () => {
     };
   }
 };
+
+
+// AIzaSyCfz13EWBfTpWJeA1OhL1828LfKPlooLBI
